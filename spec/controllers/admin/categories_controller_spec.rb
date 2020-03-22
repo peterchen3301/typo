@@ -10,11 +10,32 @@ describe Admin::CategoriesController do
     henri = Factory(:user, :login => 'henri', :profile => Factory(:profile_admin, :label => Profile::ADMIN))
     request.session = { :user => henri.id }
   end
-
+  
   it "test_index" do
     get :index
     assert_response :redirect, :action => 'index'
   end
+  
+  # Modified here
+  describe "test_create" do
+    before(:each) do 
+      get :new
+    end
+
+    it 'should render template new' do
+      assert_template 'new'
+      assert_tag :tag => "table",
+        :attributes => { :id => "category_container" }
+    end
+
+    it "shoud create new category" do
+      post:new, :category => {:name => "new_cate", :keywords => "keys", :permalink => "GG"}
+      assert_response :redirect, :action=> "index"
+      expect(assigns(:category)).not_to be_nil
+      expect(flash[:notice]).to eq("Category was successfully saved.")
+    end
+  end 
+  #............................
 
   describe "test_edit" do
     before(:each) do
@@ -26,6 +47,15 @@ describe Admin::CategoriesController do
       assert_tag :tag => "table",
         :attributes => { :id => "category_container" }
     end
+    
+    # Modified here
+    it "should edit category" do
+      post:edit, :category => {:name => "general", :keywords => "keys", :permalink => "GG"}
+      assert_response :redirect, :action=> "index"
+      expect(assigns(:category)).not_to be_nil
+      expect(flash[:notice]).to eq("Category was successfully saved.")
+    end
+    #..............
 
     it 'should have valid category' do
       assigns(:category).should_not be_nil
